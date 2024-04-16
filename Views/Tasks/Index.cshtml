@@ -1,0 +1,145 @@
+﻿@using Diploma.Enums
+@model List<EmployeeTask>
+
+@{
+    ViewData["Title"] = "Задачи";
+    var toDoTasks = Model.Where(m => m.Status == Diploma.Enums.EmployeeTaskStatus.ToDo);
+    var inProgressTasks = Model.Where(m => m.Status == Diploma.Enums.EmployeeTaskStatus.InProgress);
+    var doneTasks = Model.Where(m => m.Status == Diploma.Enums.EmployeeTaskStatus.Done);
+}
+
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Список задач</h1>
+        <a asp-area="" asp-controller="Tasks" asp-action="Create" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus fa-sm text-white-50"></i> Добавить новую задачу</a>
+    </div>
+@if (Model.Count > 0)
+{
+        <div class="row">
+            <div class="col-md-4 mb-4"><h6 class="m-0 font-weight-bold text-primary">В очереди</h6></div>
+            <div class="col-md-4 mb-4"><h6 class="m-0 font-weight-bold text-primary">В прогрессе</h6></div>
+            <div class="col-md-4 mb-4"><h6 class="m-0 font-weight-bold text-primary">Выполнено</h6></div>
+        </div>
+        <div class="row">
+
+            <!-- В очереди -->
+            <div class="col-md-4 mb-4">
+            @foreach (var task in toDoTasks)
+            {
+                    <div class="card border-left-info shadow py-2 my-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        @task.Title
+                                    </div>
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col-auto">
+                                            <div class="mb-0 mr-3 font-weight-bold text-gray-800">@task.Description</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                @(task.Assignee?.FullName ?? "Нет исполнителя")
+                                </div>
+                            </div>
+                            <div class="row mt-4">
+                                <form action="@Url.Action("UpdateStatus", "Tasks")" method="post"  style="display: flex; justify-content: end;">
+                                    <input type="hidden" name="taskId" value="@task.Id">
+                                    <input type="hidden" name="status" value="@EmployeeTaskStatus.InProgress">
+                                    <button type="submit" class="btn btn-info btn-icon-split">
+                                        <span class="icon text-white-50">
+                                            <i class="fas fa-arrow-right"></i>
+                                        </span>
+                                        <span class="text">Взять в работу</span>
+                                    </button>
+                                </form>   
+                            </div>                                                     
+                        </div>
+                    </div>
+            }
+
+            </div>
+            <!-- В прогрессе -->
+            <div class="col-md-4 mb-4">
+            @foreach (var taskP in inProgressTasks)
+            {
+                    <div class="card border-left-warning shadow py-2 my-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    @taskP.Title
+                                    </div>
+                                    <div class="mb-0 font-weight-bold text-gray-800">@taskP.Description</div>
+                                </div>
+                                <div class="col-auto">
+                                @(taskP.Assignee?.FullName ?? "Нет исполнителя")
+                                </div>
+                            </div>
+                            <div class="row mt-4">
+                                <form action="@Url.Action("UpdateStatus", "Tasks")" method="post" style="display: flex; align-items: end; justify-content: space-between;">
+                                    <input type="hidden" name="taskId" value="@taskP.Id">
+                                    <input type="hidden" name="status" value="@EmployeeTaskStatus.Done">
+                                    <div style="display: block;" >
+                                        <label>Затраченные часы</label>
+                                        <input type="number" class="form-control form-control-sm w-50" name="hoursSpent" />
+                                    </div>
+                                    <button type="submit" class="btn btn-warning btn-icon-split">
+                                        <span class="icon text-white-50">
+                                            <i class="fas fa-check"></i>
+                                        </span>
+                                        <span class="text">Завершить</span>
+                                    </button>
+                                </form>   
+                            </div>   
+                        </div>
+                    </div>
+            }
+
+            </div>
+
+            <!-- Выполнено -->
+            <div class="col-md-4 mb-4">
+            @foreach (var taskD in doneTasks)
+            {
+                    <div class="card border-left-success shadow py-2 my-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    @taskD.Title
+                                    </div>
+                                    <div class="mb-0 font-weight-bold text-gray-800">@taskD.Description</div>
+                                </div>
+                                <div class="col-auto">
+                                    @(taskD.Assignee?.FullName ?? "Нет исполнителя")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            }
+            </div>
+        </div>
+
+}
+else
+{
+    <text>Задач нет. Чтобы создать задачу нажмите кнопку "Добавить новую задачу"</text>
+}
+@section scripts
+    {
+        <script type="text/javascript">
+
+            $(function () {
+                $.ajaxSetup({ cache: false });
+                $(".compItem").click(function (e) {
+
+                    e.preventDefault();
+                    $.get(this.href, function (data) {
+                        $('#dialogContent').html(data);
+                        $('#modDialog').modal('show');
+                    });
+                });
+            })
+        </script>
+}

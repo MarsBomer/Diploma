@@ -1,0 +1,136 @@
+﻿@model List<Employee>
+
+@{
+    ViewData["Title"] = "Сотрудники";
+
+    var employees = Model.Where(m => m.Status != EmployeeStatus.Unemployed);
+    var unemployed = Model.Where(m => m.Status == EmployeeStatus.Unemployed);
+}
+
+@functions {
+    public string getStatus(Employee e)
+    {
+        return e.Status == EmployeeStatus.Employed ? "В штате" :
+        e.Status == EmployeeStatus.Unemployed ? "Уволен" :
+        e.Status == EmployeeStatus.OnVacation ? "В отпуске" :
+        "В декрете";
+    }
+    }
+
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Список сотрудников</h1>
+        <a asp-area="" asp-controller="Employees" asp-action="Create" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus fa-sm text-white-50"></i> Добавить нового сотрудника</a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Сотрудники в штате</h6>
+        </div>
+        <div class="card-body">
+            @if (employees.Any())
+        {
+                <div class="table-responsive">
+                    <div id="dataTable_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                        <div class="row m-0">
+                            <div class="col-sm-12">
+                                <table class="table table-bordered dataTable" id="dataTable" width="100%" cellspacing="0" role="grid" aria-describedby="dataTable_info" style="width: 100%;">
+                                    <thead>
+                                        <tr role="row">
+                                            <th class="sorting" tabindex="0" aria-controls="dataTable" rowspan="1" colspan="1" style="width: 20%;">E-mail</th>
+                                            <th class="sorting sorting_asc" tabindex="0" aria-controls="dataTable" rowspan="1" colspan="1" aria-sort="ascending" style="width: 20%;">ФИО</th>
+                                            <th class="sorting" tabindex="0" aria-controls="dataTable" rowspan="1" colspan="1" style="width: 10%;">Дата рождения</th>
+                                            <th class="sorting" tabindex="0" aria-controls="dataTable" rowspan="1" colspan="1" style="width: 20%;">Должность</th>
+                                            <th class="sorting" tabindex="0" aria-controls="dataTable" rowspan="1" colspan="1" style="width: 20%;">Статус трудоустройства</th>
+                                            <th class="sorting" tabindex="0" aria-controls="dataTable" rowspan="1" colspan="1" style="width: 10%;">Дата начала работы</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach (var p in employees)
+                                    {
+                                            <tr class="odd">
+                                                <td>@p.Email</td>
+                                                <td class="sorting_1">@p.LastName @p.FirstName @p.Patronimic</td>
+                                                <td>@p.BirthDate.ToString("dd/MM/yyyy")</td>
+                                                <td class="sorting_1">@p.Position</td>
+                                                <td>@getStatus(p)</td>
+                                                <td>@p.StartDate.ToString("dd/MM/yyyy")</td>
+                                            </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        }
+        else
+        {
+            <text>Нет записей</text>
+        }
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Уволенные сотрудники</h6>
+        </div>
+        <div class="card-body">
+        @if (unemployed.Any())
+        {
+                <div class="table-responsive">
+                    <div id="dataTable_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                        <div class="row m-0">
+                            <div class="col-sm-12">
+                                <table class="table table-bordered dataTable" id="dataTable" width="100%" cellspacing="0" role="grid" aria-describedby="dataTable_info" style="width: 100%;">
+                                    <thead>
+                                        <tr role="row">
+                                            <th class="sorting sorting_asc" tabindex="0" aria-controls="dataTable" rowspan="1" colspan="1" aria-sort="ascending" style="width: 20%;">ФИО</th>
+                                            <th class="sorting" tabindex="0" aria-controls="dataTable" rowspan="1" colspan="1" style="width: 20%;">Должность</th>
+                                            <th class="sorting" tabindex="0" aria-controls="dataTable" rowspan="1" colspan="1" style="width: 10%;">Дата рождения</th>
+                                            <th class="sorting" tabindex="0" aria-controls="dataTable" rowspan="1" colspan="1" style="width: 10%;">Дата начала работы</th>
+                                            <th class="sorting" tabindex="0" aria-controls="dataTable" rowspan="1" colspan="1" style="width: 10%;">Дата увольнения</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach (var p in unemployed)
+                                    {
+                                            <tr class="odd">
+                                                <td class="sorting_1">@p.LastName @p.FirstName @p.Patronimic</td>
+                                                <td class="sorting_1">Позиция</td>
+                                                <td>@getStatus(p)</td>
+                                                <td>@p.BirthDate.ToString("dd/MM/yyyy")</td>
+                                                <td>@p.BirthDate.ToString("dd/MM/yyyy")</td>
+                                            </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        }
+        else
+        {
+            <text>Нет записей</text>
+        }
+        </div>
+    </div>
+
+
+@section scripts
+    {
+        <script type="text/javascript">
+
+            $(function () {
+                $.ajaxSetup({ cache: false });
+                $(".compItem").click(function (e) {
+
+                    e.preventDefault();
+                    $.get(this.href, function (data) {
+                        $('#dialogContent').html(data);
+                        $('#modDialog').modal('show');
+                    });
+                });
+            })
+        </script>
+}
